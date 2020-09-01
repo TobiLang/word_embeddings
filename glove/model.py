@@ -74,8 +74,9 @@ class GloveModel:
                 valid_examples.append(dictionary[entry])
         valid_size = len(valid_examples)
 
-        # As suggested by the paper, the final weights are the average of w_c.T and w_t:
-        final_weights = (model.get_weights()[0] + model.get_weights()[1]) / 2
+        # As suggested by the paper, the final weights are the sum of w_c and w_t
+        # The do not average them.
+        final_weights = (model.get_weights()[0] + model.get_weights()[1])
 
         # Compute Pairwise Distance matrix: Vocabulary x Vocabulary
         distance_matrix = cosine_similarity(final_weights)
