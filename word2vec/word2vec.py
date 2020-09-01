@@ -87,7 +87,7 @@ class Word2Vec:
         Load a trained model and run the similiarity check on it.
         '''
 
-        data_sets = [("data/the-king-james-bible.txt", "english", 1000, 5.0, 50, 3)]
+        data_sets = [("data/the-king-james-bible.txt", "english", 10000, 5.0, 100, 3)]
 
         for input_file, language, vocab_size, dummy, embedding_dim, epochs in data_sets:
             # Prepare Data and Vocabulary

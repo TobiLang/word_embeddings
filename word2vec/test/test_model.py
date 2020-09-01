@@ -23,17 +23,13 @@ class TestModel(unittest.TestCase):
         Testing generation of skip-grams to be used as model input/output parameters.
         '''
         vocabulary_size = 2000
-        data = [30, 1542, 31, 30, 1543, 31, 30, 1544, 31, 30, 1545, 31, 30, 1546, 31,
-                30, 1547, 31, 30, 30, 1548, 31, 1549, 31, 46, 61, 29, 2, 17, 1550, 82,
-                87, 3, 381, 2, 33, 1551, 1552, 2, 1553, 1554, 1555, 33, 976, 1556, 2,
-                1557, 1558, 1559, 977, 1560, 1561, 66, 2, 1562, 1563, 1564, 1565, 978,
-                1566, 2, 1567, 2, 979, 1568, 2, 1569, 2, 584, 1570, 1571, 2, 1572, 978,
-                1573, 1, 1574, 2, 979, 1575, 1576, 1577, 1578, 1579, 1580, 1581, 1582,
-                1583, 980, 1584, 2, 1585, 1586, 1587, 2, 1588, 1589, 980, 1590, 1591]
+        data = [[1376, 1, 1377, 1378, 412, 1379, 788, 1380, 788, 42, 329],
+                [789, 191, 111, 112, 138, 575, 162]]
 
         ratio = 3.0
-        dummy, dummy2, label = Word2VecModel.create_skipgrams(data, vocabulary_size, ratio)
+        target, context, label = Word2VecModel.create_skipgrams(data, vocabulary_size, ratio)
 
+        self.assertEqual(target.shape, context.shape)
         pos_labels = np.sum(np.array(label) == 1)
         neg_labels = np.sum(np.array(label) == 0)
         self.assertEqual(neg_labels / pos_labels, ratio)
