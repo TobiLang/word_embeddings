@@ -8,6 +8,9 @@ from word2vec.word2vec import Word2Vec
 
 
 def main():
+    '''
+    Calling Word2Vec training. No CLI yet.
+    '''
     print("Running Word2Vec...")
     w2v = Word2Vec()
     w2v.run()

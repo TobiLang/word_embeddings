@@ -13,7 +13,7 @@ Therefore, this is basically a reprogramming of the [Word2Vec Keras Tutorial](ht
 However, I adjusted
 * SkipGrams generation (Negative Sampling size)
 * Training (direct training of the Model via .fit())
-* Removing the callback to the 2nd model, and calculating the distances between the embeddings using Scikits _euclidean_distances_ function.
+* Removing the callback to the 2nd model, and calculating the distances between the embeddings using Scikits _cosine_similarity_ function.
 
 I have not implemented CLI switches, but running from the CLI works:
 

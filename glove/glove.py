@@ -49,7 +49,7 @@ class Glove:
             * Embed_Dim
         '''
 
-        data_sets = [("data/the-king-james-bible.txt", "english", 10000, 10, 50, 1)]
+        data_sets = [("data/the-king-james-bible.txt", "english", 10000, 10, 200, 5)]
 
         for input_file, language, vocab_size, window_size, embedding_dim, epochs in data_sets:
             # Prepare Data and Vocabulary
@@ -84,7 +84,7 @@ class Glove:
         Load a trained model and run the similiarity check on it.
         '''
 
-        data_sets = [("data/the-king-james-bible.txt", "english", 10000, 10, 50, 1)]
+        data_sets = [("data/the-king-james-bible.txt", "english", 10000, 10, 200, 5)]
 
         for input_file, language, vocab_size, dummy, embedding_dim, epochs in data_sets:
             # Prepare Data and Vocabulary

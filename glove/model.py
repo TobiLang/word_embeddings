@@ -90,7 +90,7 @@ class GloveModel:
                 valid_examples.append(dictionary[entry])
         valid_size = len(valid_examples)
 
-        # As suggested, the final weights are the average of w_c.T . w_t
+        # As suggested by the paper, the final weights are the average of w_c.T and w_t:
         final_weights = (model.get_weights()[0] + model.get_weights()[1]) / 2
 
         # Compute Pairwise Distance matrix: Vocabulary x Vocabulary
@@ -103,8 +103,10 @@ class GloveModel:
             # number of nearest neighbors
             top_k = 8
             valid_idx = valid_examples[i]
-            # Select Idx Row, and sort columns per maximum
-            nearest = distance_matrix[valid_idx].argsort()[1:top_k + 1]
+            # Select Idx Row, and sort columns, cosine similarity increases
+            # therefore, the last k-entries have the highest similarity to i.
+            # We keep the last entry as a check. It should be the same as i.
+            nearest = distance_matrix[valid_idx].argsort()[-top_k:]
             log_str = 'Nearest to %s:' % valid_word
             for k in range(top_k):
                 close_word = reverse_dictionary[nearest[k]]
