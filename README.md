@@ -30,6 +30,9 @@ paper was calculated per sentence):
 * Calculate the Cooccurences for each sentence -> Map.
 * Combine them (as it is just a some) to the full matrix -> Reduce.
 
+Update: I found another Python implementation of GloVe by [Thanos Papaoikonomou](https://github.com/erwtokritos/keras-glove). His implementation of the cooccurence
+calculation is a lot faster by not using Scipy Sparse matrices but defaultdicts (just using them reduces calculation time by a factor of about 15).
+
 Running from the CLI:
 
 > python3 -m glove

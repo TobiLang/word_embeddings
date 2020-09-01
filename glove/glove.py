@@ -64,7 +64,8 @@ class Glove:
                                                                       vocab_size, window_size)
 
             # Generate Model
-            model = GloveModel.create_model(vocabulary_size=vocab_size, embedding_dim=embedding_dim)
+            model = GloveModel.create_model(vocabulary_size=vocab_size,
+                                            embedding_dim=embedding_dim)
 
             # Train Model
             logging.info("Training model for %d epochs ...", epochs)

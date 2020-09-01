@@ -5,9 +5,9 @@ Created on 31.08.2020
 '''
 import unittest
 
+from collections import defaultdict
 import tensorflow as tf
 import numpy as np
-from scipy.sparse import lil_matrix
 
 from glove.model import GloveModel
 
@@ -28,38 +28,35 @@ class TestModel(unittest.TestCase):
         '''
         Validate correct cooccurrence count for one target given left,right windows.
         '''
-        # Use sparse matrix
-        cooccurence_matrix = lil_matrix((2000, 2000))
-        target = 30
-        data_left = [30, 1542, 31]
-        data_right = [1543, 31, 30]
 
-        expected = [(30, 30, 1. / 3. + 1. / 3.),
-                    (30, 1542, 1. / 2.),
-                    (30, 31, 1. / 1. + 1. / 2.),
-                    (30, 1543, 1. / 1.)]
+        # Use defaultdict .. way more performant in updating elements than a sparse matrix
+        cooccurence_matrix = defaultdict(lambda: defaultdict(int))
+        sentence = [30, 1542, 31, 30, 1543, 31, 30]
 
-        dummy = GloveModel.calculate_cooccur(data_left, data_right, target, cooccurence_matrix)
+        expected = [(30, 30, 1. / 3. + 1. / 3. + 1. / 3. + 1. / 3.),
+                    (30, 1542, 1. / 1. + 1. / 2.),
+                    (30, 31, 1. / 2. + 1. / 1. + 1. / 2. + 1. / 1.),
+                    (30, 1543, 1. / 1. + 1. / 2.)]
+
+        dummy = GloveModel.calculate_cooccur(sentence, cooccur_matrix=cooccurence_matrix,
+                                             window_size=3)
 
         for i, j, xij in expected:
-            self.assertEqual(cooccurence_matrix[i, j], xij)
+            self.assertEqual(cooccurence_matrix[i][j], xij)
 
     def test_create_cooccurence_matrix(self):
         '''
         Validate correct creation of the full cooccurrence matrix given an input (sentences).
         '''
-        vocabulary_size = 13
+        window_size = 3
         normalized_doc = [[3, 4, 5, 6, 7],
                           [8, 9, 3, 10, 5, 1, 2, 12, 1, 1]]
 
-        cooccurence_matrix = GloveModel.create_cooccurence_matrix(normalized_doc,
-                                                                  vocabulary_size,
-                                                                  window_size=3)
+        cooccurence_matrix = GloveModel.create_cooccurence_matrix(normalized_doc, window_size)
 
-        self.assertTrue(cooccurence_matrix.shape == (vocabulary_size, vocabulary_size))
-        self.assertEqual(cooccurence_matrix[5, 3], 1. / 2. + 1. / 2.)
-        self.assertEqual(cooccurence_matrix[1, 5], 1. / 1.)
-        self.assertEqual(cooccurence_matrix[1, 12], 1. / 2. + 1. / 1. + 1. / 2.)
+        self.assertEqual(cooccurence_matrix[5][3], 1. / 2. + 1. / 2.)
+        self.assertEqual(cooccurence_matrix[1][5], 1. / 1.)
+        self.assertEqual(cooccurence_matrix[1][12], 1. / 2. + 1. / 1. + 1. / 2.)
 
     @unittest.skip("Deactivated, just a first test, whether nor not the model is actually working")
     def test_train_on_batch(self):

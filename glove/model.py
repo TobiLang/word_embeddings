@@ -7,12 +7,12 @@ Glove Model Generation, Training and validation.
 import logging
 
 from time import time
+from collections import defaultdict, UserList
 import numpy as np
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Add, Input, Dot, Embedding, Reshape
 import tensorflow.keras.backend as K
 
-from scipy.sparse import lil_matrix
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -26,26 +26,22 @@ class GloveModel:
     ALPHA = 3. / 4.
 
     @staticmethod
-    def calculate_cooccur(left_side, right_side, target_index, cooccur_matrix):
+    def calculate_cooccur(sentence, window_size, cooccur_matrix):
         '''
         Calculate the cooccurrence for the current target given left and right windows.
         '''
-        entries_left = len(left_side)
+        max_index = len(sentence)
 
-        for index, entry in enumerate(left_side):
-            # Get Distance (reverse numeration)
-            distance = entries_left - index
-            cooccur_matrix[target_index, entry] += 1. / distance
-
-        for index, entry in enumerate(right_side):
-            # Get Distance
-            distance = index + 1
-            cooccur_matrix[target_index, entry] += 1. / distance
+        for index, word_index in enumerate(sentence):
+            for distance in range(1, window_size + 1):
+                if index + distance < max_index:
+                    cooccur_matrix[word_index][sentence[index + distance]] += 1. / distance
+                    cooccur_matrix[sentence[index + distance]][word_index] += 1. / distance
 
         return cooccur_matrix
 
     @classmethod
-    def create_cooccurence_matrix(cls, normalized_doc, vocabulary_size, window_size=10):
+    def create_cooccurence_matrix(cls, normalized_doc, window_size=10):
         '''
         Create the co-occurence matrix X_ij: Number of times, j appears in
         the context of i (within a given window size).
@@ -58,23 +54,11 @@ class GloveModel:
         '''
 
         # Use sparse matrix to store cooccurrences
-        cooccur_matrix = lil_matrix((vocabulary_size, vocabulary_size))
-
+        # cooccur_matrix = lil_matrix((vocabulary_size, vocabulary_size))
+        cooccur_matrix = defaultdict(lambda: defaultdict(int))
         # Loop over sentences
         for sentence in normalized_doc:
-            # Loop over data
-            for index, target_word in enumerate(sentence):
-                # 1. get left n-words
-                left_start = max(0, index - window_size)
-                left_side = sentence[left_start:index]
-
-                # 2. get right n-words
-                right_end = min(len(sentence), index + window_size + 1)
-                right_side = sentence[index + 1:right_end]
-
-                # Calculate weighted distances for left/right vs target
-                cooccur_matrix = GloveModel.calculate_cooccur(left_side, right_side,
-                                                              target_word, cooccur_matrix)
+            cooccur_matrix = GloveModel.calculate_cooccur(sentence, window_size, cooccur_matrix)
 
         return cooccur_matrix
 
@@ -84,7 +68,7 @@ class GloveModel:
         Check the similarity of a given list of words to test the quality of the embedding.
         '''
         # For Bible:
-        valid_examples = list()
+        valid_examples = UserList()
         for entry in ['god', 'jesus', 'noah', 'egypt', 'john', 'gospel', 'moses', 'famine']:
             if dictionary.get(entry, None):
                 valid_examples.append(dictionary[entry])
@@ -120,17 +104,17 @@ class GloveModel:
         '''
 
         # Create Targes, Contexts and Labels
-        targets = list()
-        contexts = list()
-        labels = list()
+        targets = UserList()
+        contexts = UserList()
+        labels = UserList()
 
         # We only train on non-zero elements of X_ij
-        # Otherwise, the loss would be -inf due to log(0).
-        coo_cooccur = cooccurrence_matrix.tocoo()
-        for i, j, xij in zip(coo_cooccur.row, coo_cooccur.col, coo_cooccur.data):
-            targets.append(i)
-            contexts.append(j)
-            labels.append(xij)
+        for i, column in cooccurrence_matrix.items():
+            for j, xij in column.items():
+                if xij > 0:
+                    targets.append(i)
+                    contexts.append(j)
+                    labels.append(xij)
 
         targets = np.asarray(targets)
         contexts = np.asarray(contexts)
